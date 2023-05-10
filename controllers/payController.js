@@ -1,4 +1,3 @@
-
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 require('dotenv').config();
@@ -29,7 +28,7 @@ exports.Checkout = async (req, res) => {
             success: true,
             order,
         });
-        console.log(order)
+    
 
     } catch (err) {
         console.error(err);
@@ -40,9 +39,6 @@ exports.Checkout = async (req, res) => {
 
 exports.paymentVerification = async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body
-    console.log(razorpay_order_id)
-    console.log(razorpay_payment_id)
-    console.log(razorpay_signature)
     try {
         const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -50,8 +46,6 @@ exports.paymentVerification = async (req, res) => {
         const expectedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_API_SECRET)
             .update(body.toString())
             .digest('hex');
-        console.log("sig received ", razorpay_signature);
-        console.log("sig generated ", expectedSignature);
 
 
         const isAuthentic = expectedSignature === razorpay_signature
