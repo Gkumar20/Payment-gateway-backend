@@ -4,14 +4,12 @@ require('dotenv').config();
 const Payment = require('../models/paySchema')
 
 
-
-
 const rzp = new Razorpay({
     key_id: process.env.RAZORPAY_API_KEY,
     key_secret: process.env.RAZORPAY_API_SECRET
 });
 
-
+//rezorpay checkout
 exports.Checkout = async (req, res) => {
     const { amount } = req.body;
 
@@ -28,7 +26,7 @@ exports.Checkout = async (req, res) => {
             success: true,
             order,
         });
-    
+
 
     } catch (err) {
         console.error(err);
@@ -36,7 +34,7 @@ exports.Checkout = async (req, res) => {
     }
 };
 
-
+//razorpay verifications
 exports.paymentVerification = async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body
     try {
@@ -53,12 +51,11 @@ exports.paymentVerification = async (req, res) => {
             //data base saved
 
             await Payment.create({
-                razorpay_order_id,
-                razorpay_payment_id,
-                razorpay_signature
+                order_id: razorpay_order_id,
+                transaction_id: razorpay_payment_id,
             })
 
-            res.redirect(`http://localhost:3000/paymentsuccess/:${razorpay_order_id}`)
+            res.redirect(`http://localhost:3000/paymentsuccess/${razorpay_order_id}`)
 
         } else {
             res.status(400).json({
@@ -73,7 +70,7 @@ exports.paymentVerification = async (req, res) => {
     }
 };
 
-
+// get razorpay key 
 exports.RozarPayKey = async (req, res) => {
     try {
         res.status(200).json({
@@ -86,4 +83,32 @@ exports.RozarPayKey = async (req, res) => {
 };
 
 
+//get google pay merchant id
+exports.MerchantId = async (req, res) => {
+    try {
+        res.status(200).json({
+            mid: process.env.Merchant_ID
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Unable to verify' });
+    }
+};
 
+
+//Googlepay Post Transaction id and redirect
+
+exports.GoogleTransaction = async (req, res) => {
+    const { OrderId, TransactionId } = req.body
+    try {
+        await Payment.create({
+            order_id: OrderId,
+            transaction_id: TransactionId,
+        })
+        res.status(200).send({message:"success"})
+    } catch (error) {
+        console.error(err);
+        res.status(500).json({ message: 'unable to payment' });
+    }
+
+}
